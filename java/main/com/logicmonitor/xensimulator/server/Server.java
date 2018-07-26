@@ -29,6 +29,7 @@ public class Server {
          * phm.addHandler(org.apache.xmlrpc.demo.proxy.Adder.class.getName(),
          *     org.apache.xmlrpc.demo.proxy.AdderImpl.class);
          */
+        phm.addHandler("session", session.class);
         xmlRpcServer.setHandlerMapping(phm);
 
         XmlRpcServerConfigImpl serverConfig =
