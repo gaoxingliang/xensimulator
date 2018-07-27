@@ -1,42 +1,46 @@
 package com.logicmonitor.xensimulator.server;
 
+import com.logicmonitor.xensimulator.server.api.host;
+import com.logicmonitor.xensimulator.server.api.session;
+import org.apache.xmlrpc.XmlRpcException;
 import org.apache.xmlrpc.server.PropertyHandlerMapping;
 import org.apache.xmlrpc.server.XmlRpcServer;
 import org.apache.xmlrpc.server.XmlRpcServerConfigImpl;
 import org.apache.xmlrpc.webserver.WebServer;
 
+import java.io.IOException;
+
 public class Server {
-    private static final int port = 8080;
 
-    public static void main(String[] args) throws Exception {
+    public int port;
+    public Server(int port, String user, String pass) {
+        this.port = port;
+        session.pass = pass;
+        session.user = user;
+    }
+
+    public void start() throws IOException {
         WebServer webServer = new WebServer(port);
-
         XmlRpcServer xmlRpcServer = webServer.getXmlRpcServer();
 
         PropertyHandlerMapping phm = new PropertyHandlerMapping();
-        /* Load handler definitions from a property file.
-         * The property file might look like:
-         *   Calculator=org.apache.xmlrpc.demo.Calculator
-         *   org.apache.xmlrpc.demo.proxy.Adder=org.apache.xmlrpc.demo.proxy.AdderImpl
-         */
-        phm.load(Thread.currentThread().getContextClassLoader(),
-                "simulator.properties");
 
-        /* You may also provide the handler classes directly,
-         * like this:
-         * phm.addHandler("Calculator",
-         *     org.apache.xmlrpc.demo.Calculator.class);
-         * phm.addHandler(org.apache.xmlrpc.demo.proxy.Adder.class.getName(),
-         *     org.apache.xmlrpc.demo.proxy.AdderImpl.class);
-         */
-        phm.addHandler("session", session.class);
+        try {
+            phm.addHandler("session", session.class);
+            phm.addHandler("host", host.class);
+        }
+        catch (XmlRpcException e) {
+            throw new IllegalStateException("Fail to init", e);
+        }
+
         xmlRpcServer.setHandlerMapping(phm);
 
         XmlRpcServerConfigImpl serverConfig =
                 (XmlRpcServerConfigImpl) xmlRpcServer.getConfig();
+        serverConfig.setKeepAliveEnabled(true);
         serverConfig.setEnabledForExtensions(true);
         serverConfig.setContentLengthOptional(false);
-
         webServer.start();
     }
+
 }
