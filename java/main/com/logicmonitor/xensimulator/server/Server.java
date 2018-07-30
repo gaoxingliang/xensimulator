@@ -8,8 +8,6 @@ import org.apache.xmlrpc.server.XmlRpcServer;
 import org.apache.xmlrpc.server.XmlRpcServerConfigImpl;
 import org.apache.xmlrpc.webserver.WebServer;
 
-import java.io.IOException;
-
 public class Server {
 
     public int port;
@@ -19,12 +17,12 @@ public class Server {
         session.user = user;
     }
 
-    public void start() throws IOException {
-        WebServer webServer = new WebServer(port);
+    public void start() throws Exception {
+
+        WebServer webServer = new SSLWebServer(port);
         XmlRpcServer xmlRpcServer = webServer.getXmlRpcServer();
 
         PropertyHandlerMapping phm = new PropertyHandlerMapping();
-
         try {
             phm.addHandler("session", session.class);
             phm.addHandler("host", host.class);
