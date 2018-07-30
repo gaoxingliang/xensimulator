@@ -9,6 +9,7 @@ import org.apache.commons.httpclient.protocol.Protocol;
 import org.apache.commons.httpclient.protocol.ProtocolSocketFactory;
 
 import javax.net.ssl.*;
+import java.io.File;
 import java.io.IOException;
 import java.net.InetAddress;
 import java.net.Socket;
@@ -65,6 +66,8 @@ public class TestXenLogin {
 
     public static void main(String[] args) throws Exception {
 
+
+        System.out.println(new File(".").getCanonicalPath());
         TrustManager[] trustAllCerts = new TrustManager[1];
         TrustManager tm = new SantabaTM();
         trustAllCerts[0] = tm;

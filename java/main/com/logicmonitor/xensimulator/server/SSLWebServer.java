@@ -1,5 +1,6 @@
 package com.logicmonitor.xensimulator.server;
 
+import org.apache.commons.io.IOUtils;
 import org.apache.xmlrpc.server.XmlRpcStreamServer;
 import org.apache.xmlrpc.util.ThreadPool;
 import org.apache.xmlrpc.webserver.Connection;
@@ -18,26 +19,22 @@ import java.net.Socket;
 
 public class SSLWebServer extends WebServer {
 
-    public boolean ssl = false;
-    public SSLWebServer(int pPort) {
-        super(pPort);
+
+    public SSLWebServer(int port) {
+        super(port);
     }
 
     @Override
-    protected ServerSocket createServerSocket(int pPort, int backlog, InetAddress addr) throws IOException {
+    protected ServerSocket createServerSocket(int port, int backlog, InetAddress addr) throws IOException {
         try {
-
-            // -Djavax.net.ssl.keyStore=/Users/edward.gao/Downloads/xensim.keystore -Djavax.net.ssl.keyStorePassword=123456
-//
-        ServerSocketFactory ssocketFactory = SSLServerSocketFactory.getDefault();
-            ServerSocket sslsocket = ssocketFactory.createServerSocket(pPort);
+            ServerSocketFactory ssocketFactory = SSLServerSocketFactory.getDefault();
+            ServerSocket sslsocket = ssocketFactory.createServerSocket(port);
             return sslsocket;
-        } catch (Exception e) {
-            e.printStackTrace();
-            return null;
+        }
+        catch (Exception e) {
+            throw new IOException("Fail to create ssl socket on port " + port, e);
         }
     }
-
 
 
     protected ThreadPool.Task newTask(WebServer pServer, XmlRpcStreamServer pXmlRpcServer,
@@ -46,7 +43,7 @@ public class SSLWebServer extends WebServer {
     }
 
 
-    class GetRequestSupportedConnecttion extends Connection {
+    static class GetRequestSupportedConnecttion extends Connection {
 
         protected OutputStream output;
 
@@ -73,32 +70,33 @@ public class SSLWebServer extends WebServer {
         }
 
 
-        // private final OutputStream output;
-
         @Override
         public void writeErrorHeader(RequestData pData, Throwable pError, int pContentLength) throws IOException {
             if (pError.getClass().getCanonicalName().equals("org.apache.xmlrpc.webserver.Connection.BadRequestException")) {
                 try {
-                    final byte[] content = toHTTPBytes("Method " + pData.getMethod()
-                            + " not implemented (try POST)\r\n");
+                    // if this is a get request, will run into this
+                    byte [] content = new byte[1024 * 4];
+                    int len = IOUtils.read(SSLWebServer.class.getResourceAsStream("/getresponse.html"), content);
                     output.write(toHTTPBytes("1.1"));
                     output.write(toHTTPBytes(" 200 OK"));
                     output.write(newline);
                     output.write(serverName);
-                    writeContentLengthHeader(content.length);
+                    writeContentLengthHeader(len);
                     output.write(newline);
-                    output.write(content);
-                } catch (Exception e) {
+                    output.write(content, 0, len);
+                }
+                catch (Exception e) {
                     e.printStackTrace();
                 }
-            } else {
+            }
+            else {
                 super.writeErrorHeader(pData, pError, pContentLength);
             }
         }
 
-        private final byte[] clength = toHTTPBytes("Content-Length: ");
-        private final byte[] newline = toHTTPBytes("\r\n");
-        private final byte[] serverName = toHTTPBytes("Server: Apache XML-RPC 1.0\r\n");
+        private static final byte[] clength = toHTTPBytes("Content-Length: ");
+        private static final byte[] newline = toHTTPBytes("\r\n");
+        private static final byte[] serverName = toHTTPBytes("Server: Apache XML-RPC 1.0\r\n");
 
         private void writeContentLengthHeader(int pContentLength) throws IOException {
             if (pContentLength == -1) {
@@ -109,13 +107,15 @@ public class SSLWebServer extends WebServer {
             output.write(newline);
         }
 
-        /** Returns the US-ASCII encoded byte representation of text for
+        /**
+         * Returns the US-ASCII encoded byte representation of text for
          * HTTP use (as per section 2.2 of RFC 2068).
          */
-        final byte[] toHTTPBytes(String text) {
+        static final byte[] toHTTPBytes(String text) {
             try {
                 return text.getBytes("US-ASCII");
-            } catch (UnsupportedEncodingException e) {
+            }
+            catch (UnsupportedEncodingException e) {
                 throw new Error(e.getMessage() +
                         ": HTTP requires US-ASCII encoding");
             }
