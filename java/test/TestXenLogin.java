@@ -1,7 +1,6 @@
 import com.logicmonitor.xensimulator.client.Client;
 import com.logicmonitor.xensimulator.server.XenSimulator;
 import com.xensource.xenapi.*;
-import org.apache.commons.httpclient.ConnectTimeoutException;
 import org.apache.commons.httpclient.params.HttpConnectionParams;
 import org.apache.commons.httpclient.protocol.Protocol;
 import org.apache.commons.httpclient.protocol.ProtocolSocketFactory;
@@ -12,7 +11,6 @@ import java.io.IOException;
 import java.net.InetAddress;
 import java.net.Socket;
 import java.net.URL;
-import java.net.UnknownHostException;
 import java.security.SecureRandom;
 import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
@@ -88,26 +86,14 @@ public class TestXenLogin {
         cl.request("host", "reg_datasource", new Object[]{"cpu0", 1.3D});
         cl.request("host", "add_obj", new Object[]{"host", "ThisIsATestHost"});
         System.out.println("Done....");
-        boolean local = true;
         Connection c = null;
         Session s = null;
-        if (local) {
-            c = new Connection(new URL("https://127.0.0.1:8080/"));
-            s = Session.loginWithPassword(c, "test", "testpass", APIVersion.latest().toString());
-        }
-        else {
-            c = new Connection(new URL("http://192.168.170.151"));
-            s = Session.loginWithPassword(c, "root", "123456", APIVersion.latest().toString());
-        }
-
-        // System.out.println(s.getThisHost(c).queryDataSource(c, "cpu0"));
-
-//        System.out.println(s.getThisHost(c).queryDataSource(c, "cpu0"));
-
+        c = new Connection(new URL("https://127.0.0.1:8080/"));
+        s = Session.loginWithPassword(c, "test", "testpass", APIVersion.latest().toString());
         System.out.println(com.xensource.xenapi.Host.getAllRecords(c));
-
         System.out.println(HostCpu.getAllRecords(c));
         System.out.println(PIF.getAllRecords(c));
+        System.out.println(Pool.getAllRecords(c));
         Session.logout(c);
         System.exit(0);
 
@@ -122,19 +108,18 @@ public class TestXenLogin {
         }
 
         @Override
-        public Socket createSocket(String host, int port, InetAddress localAddress, int localPort) throws IOException,
-                UnknownHostException {
+        public Socket createSocket(String host, int port, InetAddress localAddress, int localPort) throws IOException {
             return sf.createSocket(host, port, localAddress, localPort);
         }
 
         @Override
         public Socket createSocket(String host, int port, InetAddress localAddress, int localPort, HttpConnectionParams params) throws
-                IOException, UnknownHostException, ConnectTimeoutException {
+                IOException {
             return sf.createSocket(host, port, localAddress, localPort);
         }
 
         @Override
-        public Socket createSocket(String host, int port) throws IOException, UnknownHostException {
+        public Socket createSocket(String host, int port) throws IOException {
             return sf.createSocket(host, port);
         }
     }

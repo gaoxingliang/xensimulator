@@ -1,7 +1,10 @@
 package com.logicmonitor.xensimulator.utils;
 
+import org.apache.xmlrpc.XmlRpcConfig;
 import org.apache.xmlrpc.client.XmlRpcClientConfigImpl;
 import org.apache.xmlrpc.common.TypeFactoryImpl;
+import org.apache.xmlrpc.common.XmlRpcController;
+import org.apache.xmlrpc.common.XmlRpcWorkerFactory;
 import org.apache.xmlrpc.parser.XmlRpcResponseParser;
 import org.apache.xmlrpc.util.SAXParsers;
 import org.xml.sax.InputSource;
@@ -35,7 +38,17 @@ public class XMLResponse {
     }
 
     public static XMLResponse parse(InputStream inputStream) throws Exception {
-        final XmlRpcResponseParser parser = new XmlRpcResponseParser(new XmlRpcClientConfigImpl(), new TypeFactoryImpl(null));
+        final XmlRpcResponseParser parser = new XmlRpcResponseParser(new XmlRpcClientConfigImpl(), new TypeFactoryImpl(new XmlRpcController() {
+            @Override
+            protected XmlRpcWorkerFactory getDefaultXmlRpcWorkerFactory() {
+                return null;
+            }
+            @Override
+            public XmlRpcConfig getConfig() {
+                return new XmlRpcClientConfigImpl();
+            }
+        }));
+
         final XMLReader xr = SAXParsers.newXMLReader();
         xr.setContentHandler(parser);
         xr.parse(new InputSource(inputStream));

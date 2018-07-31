@@ -15,7 +15,7 @@ public class TestLocalXenAPI {
             System.out.println(e.getValue().toMap());
         });
 
-        PIF.getAllRecords(c);
+        System.out.println(Pool.getAllRecords(c));
         Session.logout(c);
     }
 }

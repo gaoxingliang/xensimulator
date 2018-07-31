@@ -3,6 +3,9 @@ package com.logicmonitor.xensimulator.server.api;
 import com.logicmonitor.xensimulator.Response;
 import com.logicmonitor.xensimulator.utils.API;
 import com.logicmonitor.xensimulator.utils.XMLResponse;
+import org.apache.commons.lang.exception.ExceptionUtils;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -10,6 +13,8 @@ import java.util.List;
 import java.util.Map;
 
 public abstract class BaseAPI {
+
+    public static final Logger LOG = LogManager.getLogger();
 
     public static Map<String, List<Object>> allObjects = new HashMap<>();
 
@@ -35,8 +40,13 @@ public abstract class BaseAPI {
 
     @API
     public Map get_all_records(String session) throws Exception {
-        XMLResponse response = XMLResponse.parse(host.class.getResourceAsStream(getFileForAllRecords()));
-        return Response.newRsp().withValue(response.value).build();
+        try {
+            XMLResponse response = XMLResponse.parse(host.class.getResourceAsStream(getFileForAllRecords()));
+            return Response.newRsp().withValue(response.value).build();
+        } catch (Exception e) {
+            LOG.error("Fail to process get all records", e);
+            return Response.newRsp().withError("Fail to process " + ExceptionUtils.getFullStackTrace(e)).build();
+        }
     }
 
 
