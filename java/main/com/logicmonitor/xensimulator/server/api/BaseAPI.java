@@ -2,6 +2,7 @@ package com.logicmonitor.xensimulator.server.api;
 
 import com.logicmonitor.xensimulator.Response;
 import com.logicmonitor.xensimulator.utils.API;
+import com.logicmonitor.xensimulator.utils.XMLResponse;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -12,7 +13,13 @@ public abstract class BaseAPI {
 
     public static Map<String, List<Object>> allObjects = new HashMap<>();
 
+    // return what type of object this is.
     public abstract String getType();
+
+    /**
+     * return the simulator file when calling get_all_records api
+     */
+    public abstract String getFileForAllRecords();
 
     @API
     public Map get_all(String session) throws Exception {
@@ -24,6 +31,12 @@ public abstract class BaseAPI {
             objects = new ArrayList<>();
         }
         return Response.newRsp().withValue(objects).build();
+    }
+
+    @API
+    public Map get_all_records(String session) throws Exception {
+        XMLResponse response = XMLResponse.parse(host.class.getResourceAsStream(getFileForAllRecords()));
+        return Response.newRsp().withValue(response.value).build();
     }
 
 

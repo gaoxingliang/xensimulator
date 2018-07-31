@@ -10,7 +10,6 @@ public class host extends BaseAPI {
     public static int API_VERSION_MAJOR = 1;
     public static int API_VERSION_MINOR = 2;
 
-
     public static Map<String, Object> ds2Value = new ConcurrentHashMap<>();
 
     public Map reg_datasource(String dsName, Object value) {
@@ -22,8 +21,6 @@ public class host extends BaseAPI {
         ds2Value.put(dsName, value);
         return Response.RESPONSE_OK;
     }
-
-
 
     @API
     public Map query_data_source(String session, String ref, String dsName) throws Exception {
@@ -44,8 +41,19 @@ public class host extends BaseAPI {
         return Response.newRsp().withValue("" + API_VERSION_MINOR).build();
     }
 
+    @API
+    public Map get_by_uuid(String session, String uuid) throws Exception {
+        return null;
+    }
+
     @Override
     public String getType() {
         return "host";
     }
+
+    @Override
+    public String getFileForAllRecords() {
+        return "/host_all_records.xml";
+    }
+
 }

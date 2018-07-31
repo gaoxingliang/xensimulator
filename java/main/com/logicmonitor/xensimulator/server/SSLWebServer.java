@@ -1,6 +1,8 @@
 package com.logicmonitor.xensimulator.server;
 
 import org.apache.commons.io.IOUtils;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.apache.xmlrpc.server.XmlRpcStreamServer;
 import org.apache.xmlrpc.util.ThreadPool;
 import org.apache.xmlrpc.webserver.Connection;
@@ -18,6 +20,7 @@ import java.net.ServerSocket;
 import java.net.Socket;
 
 public class SSLWebServer extends WebServer {
+    public static final Logger LOG = LogManager.getLogger();
 
 
     public SSLWebServer(int port) {
@@ -69,6 +72,10 @@ public class SSLWebServer extends WebServer {
             }
         }
 
+        @Override
+        public void writeResponse(RequestData pData, OutputStream pBuffer) throws IOException {
+            super.writeResponse(pData, pBuffer);
+        }
 
         @Override
         public void writeErrorHeader(RequestData pData, Throwable pError, int pContentLength) throws IOException {
@@ -86,7 +93,7 @@ public class SSLWebServer extends WebServer {
                     output.write(content, 0, len);
                 }
                 catch (Exception e) {
-                    e.printStackTrace();
+                    LOG.error("error when processing get request", e);
                 }
             }
             else {

@@ -1,8 +1,6 @@
 import com.logicmonitor.xensimulator.client.Client;
-import com.logicmonitor.xensimulator.server.Server;
-import com.xensource.xenapi.APIVersion;
-import com.xensource.xenapi.Connection;
-import com.xensource.xenapi.Session;
+import com.logicmonitor.xensimulator.server.XenSimulator;
+import com.xensource.xenapi.*;
 import org.apache.commons.httpclient.ConnectTimeoutException;
 import org.apache.commons.httpclient.params.HttpConnectionParams;
 import org.apache.commons.httpclient.protocol.Protocol;
@@ -73,7 +71,7 @@ public class TestXenLogin {
         trustAllCerts[0] = tm;
 
         SSLContext sc = SSLContext.getInstance("TLSv1.2");
-        sc.init((KeyManager[])null, trustAllCerts, (SecureRandom)null);
+        sc.init((KeyManager[]) null, trustAllCerts, (SecureRandom) null);
         HttpsURLConnection.setDefaultSSLSocketFactory(sc.getSocketFactory());
         HttpsURLConnection.setDefaultHostnameVerifier(new HostnameVerifier() {
             public boolean verify(String urlHostName, SSLSession session) {
@@ -85,7 +83,7 @@ public class TestXenLogin {
         Protocol easyhttps = new Protocol("https", new LMProtocolSocketFactory(sc.getSocketFactory()), 8080);
         Protocol.registerProtocol("https", easyhttps);
 
-        new Server(8080, "test", "testpass").start();
+        new XenSimulator(8080, "test", "testpass").start();
         Client cl = new Client("https://127.0.0.1:8080");
         cl.request("host", "reg_datasource", new Object[]{"cpu0", 1.3D});
         cl.request("host", "add_obj", new Object[]{"host", "ThisIsATestHost"});
@@ -102,24 +100,30 @@ public class TestXenLogin {
             s = Session.loginWithPassword(c, "root", "123456", APIVersion.latest().toString());
         }
 
-       // System.out.println(s.getThisHost(c).queryDataSource(c, "cpu0"));
+        // System.out.println(s.getThisHost(c).queryDataSource(c, "cpu0"));
 
 //        System.out.println(s.getThisHost(c).queryDataSource(c, "cpu0"));
 
-        System.out.println(com.xensource.xenapi.Host.getAll(c));
+        System.out.println(com.xensource.xenapi.Host.getAllRecords(c));
 
-        //Session.logout(c);
+        System.out.println(HostCpu.getAllRecords(c));
+        System.out.println(PIF.getAllRecords(c));
+        Session.logout(c);
+        System.exit(0);
 
 
     }
+
     static class LMProtocolSocketFactory implements ProtocolSocketFactory {
         SSLSocketFactory sf;
+
         public LMProtocolSocketFactory(SSLSocketFactory sf) {
             this.sf = sf;
         }
 
         @Override
-        public Socket createSocket(String host, int port, InetAddress localAddress, int localPort) throws IOException, UnknownHostException {
+        public Socket createSocket(String host, int port, InetAddress localAddress, int localPort) throws IOException,
+                UnknownHostException {
             return sf.createSocket(host, port, localAddress, localPort);
         }
 
