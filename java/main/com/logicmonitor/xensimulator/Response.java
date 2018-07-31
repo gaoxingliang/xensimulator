@@ -13,9 +13,13 @@ public class Response {
     public static final String VALUE = "Value";
     public static final String ERROR_DESCR = "ErrorDescription";
 
-    public static final Map RESPONSE_AUTH_FAILED = Response.newRsp().withError("SESSION_AUTHENTICATION_FAILED").build();
 
-    public static final Map RESPONSE_INTERNAL_ERROR = Response.newRsp().withError("INTERNAL_ERROR").build();
+    public static final Map Response_UUID_INVALID = Response.newRsp().withError("UUID_INVALID", "The UUID not exists",
+            "Please check the uuid for the templates *_all_records.xml").build();
+
+    public static final Map RESPONSE_AUTH_FAILED = Response.newRsp().withError("SESSION_AUTHENTICATION_FAILED", "Authe failed", "Auth failed").build();
+
+    public static final Map RESPONSE_INTERNAL_ERROR = Response.newRsp().withError("INTERNAL_ERROR", "Something wrong in simulator").build();
 
     public static final Map RESPONSE_OK = Response.newRsp().build();
 
@@ -39,7 +43,7 @@ public class Response {
         return this;
     }
 
-    public Response withError(String error) {
+    public Response withError(String ...error) {
         /**
          * log4j:WARN Please initialize the log4j system properly.
          * Exception in thread "main" java.lang.ArrayIndexOutOfBoundsException: 1
@@ -49,7 +53,8 @@ public class Response {
          * 	at TestXenLogin.main(TestXenLogin.java:27)
          */
         _resp.put(STATUS, STATUS_FAILURE);
-        _resp.put(ERROR_DESCR, new String[]{error, "" /*copy it as a bug in Xen API */});
+        String[] errors = error;
+        _resp.put(ERROR_DESCR, errors);
         return this;
     }
 

@@ -2,6 +2,7 @@ package com.logicmonitor.xensimulator.server.api;
 
 import com.logicmonitor.xensimulator.Response;
 import com.logicmonitor.xensimulator.utils.API;
+import com.logicmonitor.xensimulator.utils.NotSupport;
 import com.logicmonitor.xensimulator.utils.XMLResponse;
 import org.apache.commons.lang.exception.ExceptionUtils;
 import org.apache.logging.log4j.LogManager;
@@ -25,6 +26,11 @@ public abstract class BaseAPI {
      * return the simulator file when calling get_all_records api
      */
     public abstract String getFileForAllRecords();
+
+    @API
+    public Map get_record(String session, String objRef) throws Exception {
+        throw new NotSupport();
+    }
 
     @API
     public Map get_all(String session) throws Exception {

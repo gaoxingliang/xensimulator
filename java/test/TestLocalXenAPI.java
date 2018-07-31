@@ -1,9 +1,12 @@
+import com.logicmonitor.xensimulator.utils.XMLResponse;
 import com.xensource.xenapi.*;
 
 import java.net.URL;
 
 public class TestLocalXenAPI {
     public static void main(String[] args) throws Exception {
+        XMLResponse r = XMLResponse.parse(TestLocalXenAPI.class.getResourceAsStream("/host_metrics_get_record.xml"));
+
         boolean local = false;
         Connection c = null;
         Session s = null;
@@ -15,7 +18,9 @@ public class TestLocalXenAPI {
             System.out.println(e.getValue().toMap());
         });
 
-        System.out.println(Pool.getAllRecords(c));
+        Host h = Host.getByUuid(c, "4ac188d2-7dfa-44ae-8e6f-3b88d75220ce");
+        HostMetrics hm = h.getMetrics(c);
+        System.out.println(hm.getRecord(c));
         Session.logout(c);
     }
 }
