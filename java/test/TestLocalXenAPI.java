@@ -22,6 +22,23 @@ public class TestLocalXenAPI {
         HostMetrics hm = h.getMetrics(c);
         System.out.println("cpu usage:" + h.queryDataSource(c, "cpu0"));
         System.out.println(hm.getRecord(c));
+
+        System.out.println(VM.getAllRecords(c));
+
+        System.out.println("=======");
+        VM vm = VM.getByUuid(c, "ec944b8d-861e-ac96-ec47-5f56df8ef772");
+        System.out.println(vm);
+        System.out.println(vm.getMetrics(c).getRecord(c));
+
+
+        System.out.println("PIF");
+        System.out.println(PIF.getAllRecords(c));
+        PIF p = PIF.getByUuid(c, "fa120a3e-6bb4-77af-7ffc-9f1110e8a84b");
+        PIF.Record pr = PIF.getByUuid(c, "fa120a3e-6bb4-77af-7ffc-9f1110e8a84b").getRecord(c);
+        System.out.println(pr.device);
+        System.out.println(p.getMetrics(c).getRecord(c));
+        System.out.println(h.getDataSources(c));
+        //System.out.println(h.queryDataSource(c, "pif_" + pr.device + "_vif.rx"));
         Session.logout(c);
     }
 }

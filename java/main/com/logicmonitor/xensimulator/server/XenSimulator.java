@@ -43,6 +43,7 @@ public class XenSimulator {
             phm.addHandler("SR", SR.class);
             phm.addHandler("pool", pool.class);
             phm.addHandler("host_metrics", host_metrics.class);
+            phm.addHandler("VM_metrics", VM_metrics.class);
         }
         catch (XmlRpcException e) {
             throw new IllegalStateException("Fail to init", e);
