@@ -1,5 +1,6 @@
 package com.logicmonitor.xensimulator.server;
 
+import com.logicmonitor.xensimulator.utils.SimulatorSettings;
 import org.apache.commons.io.IOUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -10,14 +11,18 @@ import org.apache.xmlrpc.webserver.RequestData;
 import org.apache.xmlrpc.webserver.WebServer;
 
 import javax.net.ServerSocketFactory;
-import javax.net.ssl.SSLServerSocketFactory;
+import javax.net.ssl.KeyManagerFactory;
+import javax.net.ssl.SSLContext;
+import javax.net.ssl.TrustManagerFactory;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.UnsupportedEncodingException;
 import java.lang.reflect.Field;
 import java.net.InetAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.security.KeyStore;
 
 public class SSLWebServer extends WebServer {
     public static final Logger LOG = LogManager.getLogger();
@@ -30,11 +35,32 @@ public class SSLWebServer extends WebServer {
     @Override
     protected ServerSocket createServerSocket(int port, int backlog, InetAddress addr) throws IOException {
         try {
-            ServerSocketFactory ssocketFactory = SSLServerSocketFactory.getDefault();
+
+            /**
+             * let's initialize the keystore
+             */
+
+            InputStream keyIs = null;
+            KeyStore ks = null;
+
+            keyIs = SSLWebServer.class.getResourceAsStream(SimulatorSettings.keystoreFile);
+
+            ks = KeyStore.getInstance("JKS");
+            ks.load(keyIs, SimulatorSettings.keystorePass);
+            KeyManagerFactory kmf = KeyManagerFactory.getInstance("SunX509");
+            kmf.init(ks, SimulatorSettings.keystorePass);
+            TrustManagerFactory tmf = TrustManagerFactory.getInstance("SunX509");
+            tmf.init(ks);
+            SSLContext sslContext = SSLContext.getInstance("TLS");
+            sslContext.init(kmf.getKeyManagers(), tmf.getTrustManagers(), null);
+
+            ServerSocketFactory ssocketFactory = sslContext.getServerSocketFactory();
             ServerSocket sslsocket = ssocketFactory.createServerSocket(port);
+            LOG.info("Server opened on {} with backlog {}", port, backlog);
             return sslsocket;
         }
         catch (Exception e) {
+            LOG.error("Fail to create ssl socket", e);
             throw new IOException("Fail to create ssl socket on port " + port, e);
         }
     }
@@ -75,6 +101,7 @@ public class SSLWebServer extends WebServer {
         @Override
         public void writeResponse(RequestData pData, OutputStream pBuffer) throws IOException {
             super.writeResponse(pData, pBuffer);
+
         }
 
         @Override
@@ -82,7 +109,7 @@ public class SSLWebServer extends WebServer {
             if (pError.getClass().getCanonicalName().equals("org.apache.xmlrpc.webserver.Connection.BadRequestException")) {
                 try {
                     // if this is a get request, will run into this
-                    byte [] content = new byte[1024 * 4];
+                    byte[] content = new byte[1024 * 4];
                     int len = IOUtils.read(SSLWebServer.class.getResourceAsStream("/getresponse.html"), content);
                     output.write(toHTTPBytes("1.1"));
                     output.write(toHTTPBytes(" 200 OK"));

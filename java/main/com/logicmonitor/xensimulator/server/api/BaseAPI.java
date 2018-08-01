@@ -44,6 +44,17 @@ public abstract class BaseAPI {
         return Response.newRsp().withValue(objects).build();
     }
 
+
+    /**
+     * Returns a map like:
+     * {
+     *  Status: Success
+     *  Value: the value objects
+     * }
+     * @param session
+     * @return
+     * @throws Exception
+     */
     @API
     public Map get_all_records(String session) throws Exception {
         try {

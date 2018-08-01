@@ -20,6 +20,7 @@ public class TestLocalXenAPI {
 
         Host h = Host.getByUuid(c, "4ac188d2-7dfa-44ae-8e6f-3b88d75220ce");
         HostMetrics hm = h.getMetrics(c);
+        System.out.println("cpu usage:" + h.queryDataSource(c, "cpu0"));
         System.out.println(hm.getRecord(c));
         Session.logout(c);
     }

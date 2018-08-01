@@ -21,6 +21,7 @@ public class XenSimulator {
     static final Logger LOG = LogManager.getLogger();
 
     public final int httpsPort;
+    private WebServer httpsWebServer;
 
     public XenSimulator(int httpsPort, String user, String pass) {
         this.httpsPort = httpsPort;
@@ -46,8 +47,7 @@ public class XenSimulator {
         catch (XmlRpcException e) {
             throw new IllegalStateException("Fail to init", e);
         }
-        WebServer httpsWebServer = new SSLWebServer(httpsPort);
-
+        httpsWebServer = new SSLWebServer(httpsPort);
 
         httpsWebServer.getXmlRpcServer().setTypeFactory(new TypeFactoryImpl(httpsWebServer.getXmlRpcServer()) {
             @Override
@@ -77,5 +77,11 @@ public class XenSimulator {
         httpsWebServer.start();
         LOG.info("simulator started at port={}", httpsPort);
 
+    }
+
+    public void stop() {
+        if (httpsWebServer != null) {
+            httpsWebServer.shutdown();
+        }
     }
 }
