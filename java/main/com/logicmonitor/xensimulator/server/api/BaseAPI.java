@@ -46,13 +46,27 @@ public abstract class BaseAPI {
 
     @API
     public Map get_by_uuid(String session, String uuid) throws Exception {
-        // check whether this object exists
         Map resp = get_all_records(session);
-        Map allHosts = (Map)resp.get(Response.VALUE);
-        for (Object value : allHosts.values()) {
-            Map valueMapForAHost = (Map) value;
-            if (valueMapForAHost.get("uuid").equals(uuid)) {
-                return Response.newRsp().withValue(uuid).build();
+        Map allThisTypeObjects = (Map)resp.get(Response.VALUE);
+        for (Object entry : allThisTypeObjects.entrySet()) {
+            Map.Entry oneEntry = (Map.Entry)entry;
+            Map valueMapForThisEntry = (Map) oneEntry.getValue();
+            if (valueMapForThisEntry.get("uuid").toString().equals(uuid)) {
+                return Response.newRsp().withValue(oneEntry.getKey()).build();
+            }
+        }
+        return Response.Response_UUID_INVALID;
+    }
+
+    @API
+    public Map get_uuid(String session, String objectRef) throws Exception {
+        Map resp = get_all_records(session);
+        Map allThisTypeObjects = (Map)resp.get(Response.VALUE);
+        for (Object entry : allThisTypeObjects.entrySet()) {
+            Map.Entry oneEntry = (Map.Entry)entry;
+            if (oneEntry.getKey().equals(objectRef)) {
+                Map valueMapForThisEntry = (Map) oneEntry.getValue();
+                return Response.newRsp().withValue(valueMapForThisEntry.get("uuid")).build();
             }
         }
         return Response.Response_UUID_INVALID;

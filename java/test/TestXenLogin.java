@@ -39,7 +39,7 @@ public class TestXenLogin {
         System.out.println(hm.getRecord(c));
 
         Session.logout(c);
-        System.exit(0);
+        //System.exit(0);
 
 
     }

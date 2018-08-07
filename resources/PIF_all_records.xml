@@ -65,7 +65,7 @@
                                             </member>
                                             <member>
                                                 <name>IP</name>
-                                                <value>192.168.170.151</value>
+                                                <value>127.0.0.1</value>
                                             </member>
                                             <member>
                                                 <name>netmask</name>

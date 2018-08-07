@@ -111,11 +111,13 @@ public class SSLWebServer extends WebServer {
                     // if this is a get request, will run into this
                     byte[] content = new byte[1024 * 4];
                     int len = IOUtils.read(SSLWebServer.class.getResourceAsStream("/getresponse.html"), content);
-                    output.write(toHTTPBytes("1.1"));
+                    output.write(toHTTPBytes("HTTP/1.1"));
                     output.write(toHTTPBytes(" 200 OK"));
                     output.write(newline);
-                    output.write(serverName);
                     writeContentLengthHeader(len);
+                    output.write(serverName);
+                    output.write(newline);
+
                     output.write(newline);
                     output.write(content, 0, len);
                 }

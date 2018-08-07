@@ -18,7 +18,14 @@ public class TestLocalXenAPI {
             System.out.println(e.getValue().toMap());
         });
 
+        Pool.Record poolRecord = Pool.getAllRecords(c).values().iterator().next();
+        Host h2 = poolRecord.master;
+        System.out.println("for host in pool:" + h2.getUuid(c));
+
         Host h = Host.getByUuid(c, "4ac188d2-7dfa-44ae-8e6f-3b88d75220ce");
+        System.out.println(h.getUuid(c));
+        System.out.println(h.getAddress(c));
+        System.out.println(1/0);
         HostMetrics hm = h.getMetrics(c);
         System.out.println("cpu usage:" + h.queryDataSource(c, "cpu0"));
         System.out.println(hm.getRecord(c));
