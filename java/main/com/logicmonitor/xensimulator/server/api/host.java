@@ -3,7 +3,7 @@ package com.logicmonitor.xensimulator.server.api;
 import com.logicmonitor.xensimulator.Response;
 import com.logicmonitor.xensimulator.utils.API;
 import com.logicmonitor.xensimulator.utils.SimAPI;
-import com.logicmonitor.xensimulator.utils.XMLResponse;
+import com.logicmonitor.xensimulator.utils.XenSimulatorSettings;
 import org.apache.commons.lang.exception.ExceptionUtils;
 
 import java.util.Map;
@@ -11,8 +11,10 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Stream;
 
 public class host extends BaseAPI {
-    public static int API_VERSION_MAJOR = 1;
-    public static int API_VERSION_MINOR = 2;
+
+
+    public static int API_VERSION_MAJOR;
+    public static int API_VERSION_MINOR;
 
     public static Map<String, Object> ds2Value = new ConcurrentHashMap<>();
 
@@ -24,29 +26,30 @@ public class host extends BaseAPI {
      */
     public static String masterIp = "127.0.0.1";
 
-    public host() {
+    static {
         try {
-            XMLResponse xmlResponse = XMLResponse.parse(host.class.getResourceAsStream("/host_get_datasources.xml"));
-            Stream.of((Object[])xmlResponse.value).forEach(o -> {
+            Stream.of((Object[])XenSimulatorSettings.getXmlResponseValueForFile("/xmltemplates/host_get_datasources.xml")).forEach(o -> {
                 // this is a map
                 Map map = (Map)o;
                 defaultDS2Value.put(map.get("name_label").toString(), map.get("value"));
             });
-            LOG.info("Default DS loaded count={}", defaultDS2Value.size());
+            LOG.info("All data sources loaded count={}", defaultDS2Value.size());
         }
         catch (Exception e) {
             LOG.error("Fail to load default data sources", e);
         }
-    }
 
-    public Map reg_datasource(String dsName, Object value) {
-        ds2Value.put(dsName, value);
-        return Response.RESPONSE_OK;
-    }
-    
-    public Map reg_datasource(String dsName, Double value) {
-        ds2Value.put(dsName, value);
-        return Response.RESPONSE_OK;
+        try {
+            Map map = (Map) XenSimulatorSettings.getXmlResponseValueForFile("/xmltemplates/host_all_records.xml");
+            Map hostMap = (Map)map.values().iterator().next();
+            API_VERSION_MAJOR = Integer.valueOf(hostMap.get("API_version_minor").toString());
+            API_VERSION_MINOR = Integer.valueOf(hostMap.get("API_version_major").toString());
+            LOG.info("API version loaded major={}, minor={}", API_VERSION_MAJOR, API_VERSION_MINOR);
+        } catch (Exception e) {
+            LOG.error("Fail to load the api version", e);
+            throw new IllegalStateException("Fail to load the API version " + e.getMessage(), e);
+        }
+
     }
 
     @API
@@ -122,8 +125,7 @@ public class host extends BaseAPI {
     @API
     public Map get_all_records(String session) throws Exception {
         try {
-            XMLResponse response = XMLResponse.parse(host.class.getResourceAsStream(getFileForAllRecords()));
-            Map valueMap = (Map)response.value;
+            Map valueMap = (Map)XenSimulatorSettings.getXmlResponseValueForFile(getFileForAllRecords());
             for (Object entry : valueMap.entrySet()){
                 Map.Entry oneHostEntry = (Map.Entry) entry;
                 ((Map)oneHostEntry.getValue()).put("address", masterIp);
@@ -136,18 +138,18 @@ public class host extends BaseAPI {
     }
 
 
-   @Override
+    @Override
     public String getType() {
         return "host";
     }
 
     @Override
     public String getFileForAllRecords() {
-        return "/host_all_records.xml";
+        return "/xmltemplates/host_all_records.xml";
     }
 
     @SimAPI
-    public Map setMasterIP(String session, String masterIp) {
+    public Map setMasterIP(String masterIp) {
         LOG.info("The master ip changed from {} to {}", host.masterIp, masterIp);
         host.masterIp = masterIp;
         return Response.RESPONSE_OK;

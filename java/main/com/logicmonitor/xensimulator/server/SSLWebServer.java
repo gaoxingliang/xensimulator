@@ -1,7 +1,6 @@
 package com.logicmonitor.xensimulator.server;
 
-import com.logicmonitor.xensimulator.utils.SimulatorSettings;
-import org.apache.commons.io.IOUtils;
+import com.logicmonitor.xensimulator.utils.XenSimulatorSettings;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.apache.xmlrpc.server.XmlRpcStreamServer;
@@ -14,10 +13,7 @@ import javax.net.ServerSocketFactory;
 import javax.net.ssl.KeyManagerFactory;
 import javax.net.ssl.SSLContext;
 import javax.net.ssl.TrustManagerFactory;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
-import java.io.UnsupportedEncodingException;
+import java.io.*;
 import java.lang.reflect.Field;
 import java.net.InetAddress;
 import java.net.ServerSocket;
@@ -43,12 +39,12 @@ public class SSLWebServer extends WebServer {
             InputStream keyIs = null;
             KeyStore ks = null;
 
-            keyIs = SSLWebServer.class.getResourceAsStream(SimulatorSettings.keystoreFile);
+            keyIs = SSLWebServer.class.getResourceAsStream(XenSimulatorSettings.keystoreFile);
 
             ks = KeyStore.getInstance("JKS");
-            ks.load(keyIs, SimulatorSettings.keystorePass);
+            ks.load(keyIs, XenSimulatorSettings.keystorePass);
             KeyManagerFactory kmf = KeyManagerFactory.getInstance("SunX509");
-            kmf.init(ks, SimulatorSettings.keystorePass);
+            kmf.init(ks, XenSimulatorSettings.keystorePass);
             TrustManagerFactory tmf = TrustManagerFactory.getInstance("SunX509");
             tmf.init(ks);
             SSLContext sslContext = SSLContext.getInstance("TLS");
@@ -100,8 +96,14 @@ public class SSLWebServer extends WebServer {
 
         @Override
         public void writeResponse(RequestData pData, OutputStream pBuffer) throws IOException {
+            if (XenSimulatorSettings.responseDelayInMs > 0) {
+                try {
+                    Thread.sleep(XenSimulatorSettings.responseDelayInMs);
+                }
+                catch (InterruptedException e) {
+                }
+            }
             super.writeResponse(pData, pBuffer);
-
         }
 
         @Override
@@ -109,17 +111,16 @@ public class SSLWebServer extends WebServer {
             if (pError.getClass().getCanonicalName().equals("org.apache.xmlrpc.webserver.Connection.BadRequestException")) {
                 try {
                     // if this is a get request, will run into this
-                    byte[] content = new byte[1024 * 4];
-                    int len = IOUtils.read(SSLWebServer.class.getResourceAsStream("/getresponse.html"), content);
                     output.write(toHTTPBytes("HTTP/1.1"));
                     output.write(toHTTPBytes(" 200 OK"));
                     output.write(newline);
-                    writeContentLengthHeader(len);
+                    String response = XenSimulatorSettings.getResponseContent;
+                    writeContentLengthHeader(response.getBytes().length);
                     output.write(serverName);
                     output.write(newline);
 
                     output.write(newline);
-                    output.write(content, 0, len);
+                    output.write(response.getBytes());
                 }
                 catch (Exception e) {
                     LOG.error("error when processing get request", e);
@@ -156,7 +157,6 @@ public class SSLWebServer extends WebServer {
                         ": HTTP requires US-ASCII encoding");
             }
         }
-
 
     }
 }

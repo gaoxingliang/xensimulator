@@ -1,3 +1,5 @@
+package com.logicmonitor.xensimulator.server.api;
+
 import com.xensource.xenapi.Host;
 import com.xensource.xenapi.PIF;
 import junit.framework.Assert;
@@ -12,6 +14,9 @@ public class TestPIF extends TestCase{
         Host h = Host.getByUuid(c, "4ac188d2-7dfa-44ae-8e6f-3b88d75220ce");
         Double d = h.queryDataSource(c, "pif_eth0_tx");
         System.out.println("the tx for eth0 is " + d);
+
+        PIF pif = pifs.keySet().iterator().next();
+        System.out.println(pif.getMetrics(c));
         Assert.assertTrue("should get value for pif", d != null);
     }
 }

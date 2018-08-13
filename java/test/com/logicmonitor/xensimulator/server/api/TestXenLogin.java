@@ -1,6 +1,8 @@
-import com.logicmonitor.xensimulator.client.Client;
+package com.logicmonitor.xensimulator.server.api;
+
+import com.logicmonitor.xensimulator.client.XenRPCClient;
 import com.logicmonitor.xensimulator.server.XenSimulator;
-import com.logicmonitor.xensimulator.utils.SimulatorSettings;
+import com.logicmonitor.xensimulator.utils.XenSimulatorSettings;
 import com.xensource.xenapi.*;
 
 import java.io.File;
@@ -13,13 +15,13 @@ public class TestXenLogin {
     public static void main(String[] args) throws Exception {
 
 
-        SimulatorSettings.ignoreSSL = true;
+        XenSimulatorSettings.ignoreSSL = true;
 
 
         System.out.println(new File(".").getCanonicalPath());
 
         new XenSimulator(8080, "test", "testpass").start();
-        Client cl = new Client("https://127.0.0.1:8080");
+        XenRPCClient cl = new XenRPCClient("https://127.0.0.1:8080");
         cl.request("host", "reg_datasource", new Object[]{"cpu0", 1.3D});
         cl.request("host", "add_obj", new Object[]{"host", "ThisIsATestHost"});
         System.out.println("Done....");

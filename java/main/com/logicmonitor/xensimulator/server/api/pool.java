@@ -8,6 +8,6 @@ public class pool extends BaseAPI {
 
     @Override
     public String getFileForAllRecords() {
-        return "/pool_all_records.xml";
+        return "/xmltemplates/pool_all_records.xml";
     }
 }

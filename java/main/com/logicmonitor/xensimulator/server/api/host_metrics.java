@@ -32,6 +32,6 @@ public class host_metrics extends BaseAPI {
 
     @Override
     public String getFileForAllRecords() {
-        throw new NotSupport();
+        throw new NotSupport("Not support host_metrics.get_all_records");
     }
 }

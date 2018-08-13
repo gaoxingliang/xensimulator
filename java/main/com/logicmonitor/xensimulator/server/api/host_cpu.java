@@ -28,6 +28,6 @@ public class host_cpu extends BaseAPI {
 
     @Override
     public String getFileForAllRecords() {
-        return "/host_cpu_all_records.xml";
+        return "/xmltemplates/host_cpu_all_records.xml";
     }
 }

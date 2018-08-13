@@ -22,8 +22,8 @@ public class XMLResponse {
     public final int errorCode;
     public final String errorMessage;
     public Throwable errorCause;
-    public final Map result; // the whole result
-    public final Object value; // the value part
+    public final Map result; // the whole result includes a Status and Value.
+    public final Object value; // the value part,  /*may is map or list*/
     private XMLResponse(int errorCode, String errorMessage, Throwable errorCause, Map result) {
         this.errorCode = errorCode;
         this.errorMessage = errorMessage;
@@ -52,7 +52,9 @@ public class XMLResponse {
         final XMLReader xr = SAXParsers.newXMLReader();
         xr.setContentHandler(parser);
         xr.parse(new InputSource(inputStream));
-        return new XMLResponse(parser.getErrorCode(), parser.getErrorMessage(), parser.getErrorCause(), (Map)parser.getResult());
+        XMLResponse resp = new XMLResponse(parser.getErrorCode(), parser.getErrorMessage(), parser.getErrorCause(), (Map)parser.getResult());
+        inputStream.close();
+        return resp;
     }
 
     @Override

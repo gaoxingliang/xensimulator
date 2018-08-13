@@ -1,3 +1,5 @@
+package com.logicmonitor.xensimulator.server.api;
+
 import com.xensource.xenapi.Host;
 import com.xensource.xenapi.HostCpu;
 import org.junit.Test;

@@ -43,7 +43,7 @@ public class session extends BaseAPI {
 
     @Override
     public String getFileForAllRecords() {
-        throw new NotSupport();
+        throw new NotSupport("Not support " + getType() + ".get_all_records");
     }
 
     @API

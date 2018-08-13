@@ -8,6 +8,6 @@ public class VIF extends BaseAPI {
 
     @Override
     public String getFileForAllRecords() {
-        return "/VIF_all_records.xml";
+        return "/xmltemplates/VIF_all_records.xml";
     }
 }

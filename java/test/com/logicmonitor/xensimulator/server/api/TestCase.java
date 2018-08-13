@@ -1,6 +1,8 @@
+package com.logicmonitor.xensimulator.server.api;
+
 import com.logicmonitor.xensimulator.server.XenSimulator;
 import com.logicmonitor.xensimulator.utils.SSLUtils;
-import com.logicmonitor.xensimulator.utils.SimulatorSettings;
+import com.logicmonitor.xensimulator.utils.XenSimulatorSettings;
 import com.xensource.xenapi.*;
 import org.junit.After;
 import org.junit.Before;
@@ -15,7 +17,7 @@ public abstract class TestCase {
 
     @Before
     public void start() throws Exception {
-        SimulatorSettings.ignoreSSL = true;
+        XenSimulatorSettings.ignoreSSL = true;
         simulator = new XenSimulator(8080, "test", "testpass");
         simulator.start();
         SSLUtils.ignoreSSL(8080);

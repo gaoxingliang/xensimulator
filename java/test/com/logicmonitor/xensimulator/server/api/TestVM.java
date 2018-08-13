@@ -1,3 +1,5 @@
+package com.logicmonitor.xensimulator.server.api;
+
 import com.xensource.xenapi.Session;
 import com.xensource.xenapi.VM;
 import com.xensource.xenapi.VMMetrics;
@@ -11,6 +13,7 @@ public class TestVM extends TestCase {
         System.out.println(vm);
         VMMetrics.Record r = vm.getMetrics(c).getRecord(c);
         System.out.println(r);
+
         Session.logout(c);
         Assert.assertTrue("The memory should be >=0 & <=1204 but is:" + r.memoryActual, r.memoryActual >= 0 && r.memoryActual <= 1024);
     }

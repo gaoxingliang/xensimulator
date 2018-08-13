@@ -1,6 +1,7 @@
 package com.logicmonitor.xensimulator.server;
 
 import com.logicmonitor.xensimulator.server.api.*;
+import com.logicmonitor.xensimulator.utils.XenSimulatorSettings;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.apache.xmlrpc.XmlRpcException;
@@ -44,6 +45,9 @@ public class XenSimulator {
             phm.addHandler("pool", pool.class);
             phm.addHandler("host_metrics", host_metrics.class);
             phm.addHandler("VM_metrics", VM_metrics.class);
+
+
+            phm.addHandler(XenSimulatorSettings.class.getName(), XenSimulatorSettings.class);
         }
         catch (XmlRpcException e) {
             throw new IllegalStateException("Fail to init", e);

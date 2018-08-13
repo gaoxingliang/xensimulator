@@ -1,3 +1,5 @@
+package com.logicmonitor.xensimulator.server.api;
+
 import com.xensource.xenapi.Host;
 import com.xensource.xenapi.HostMetrics;
 import com.xensource.xenapi.Pool;

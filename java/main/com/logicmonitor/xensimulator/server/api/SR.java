@@ -8,6 +8,6 @@ public class SR extends BaseAPI {
 
     @Override
     public String getFileForAllRecords() {
-        return "/SR_all_records.xml";
+        return "/xmltemplates/SR_all_records.xml";
     }
 }

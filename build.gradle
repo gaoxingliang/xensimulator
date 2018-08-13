@@ -24,7 +24,7 @@ buildscript {
         MODULE                      = "xen-simulator"
         MAVEN_GROUP_ID              = "com.logicmonitor"
         MAVEN_ARTIFACT_ID           = "xen-simulator"
-        MAVEN_VERSION               = "0.0.1"
+        MAVEN_VERSION               = "0.0.6"
     }
 
     repositories {

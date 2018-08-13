@@ -8,6 +8,6 @@ public class VBD extends BaseAPI {
 
     @Override
     public String getFileForAllRecords() {
-        return "";
+        return "/xmltemplates/VBD_all_records.xml";
     }
 }
