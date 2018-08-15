@@ -1,6 +1,7 @@
 package com.logicmonitor.xensimulator.server.api;
 
 import com.logicmonitor.xensimulator.Response;
+import com.logicmonitor.xensimulator.utils.RandomValue;
 
 import java.util.Map;
 import java.util.Random;
@@ -12,6 +13,7 @@ public class host_cpu extends BaseAPI {
     }
 
 
+    @RandomValue(attrs="The cpu number has a range from [0-100]")
     @Override
     public Map get_all_records(String session) throws Exception {
         Map resp = super.get_all_records(session);

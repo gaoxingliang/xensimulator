@@ -21,13 +21,29 @@ public class XenSimulator {
 
     static final Logger LOG = LogManager.getLogger();
 
-    public final int httpsPort;
+    public final int httpsPort, httpPort;
     private WebServer httpsWebServer;
+    private WebServer httpWebServer;
 
     public XenSimulator(int httpsPort, String user, String pass) {
+        this(httpsPort, 0, user, pass);
+    }
+
+    /**
+     * New a xen simulator
+     * @param httpsPort the https port. if <=0, will not start https
+     * @param httpPort the http port. if <=0, will not start http
+     * @param user
+     * @param pass
+     */
+    public XenSimulator(int httpsPort, int httpPort, String user, String pass) {
         this.httpsPort = httpsPort;
+        this.httpPort = httpPort;
         session.pass = pass;
         session.user = user;
+        if (httpsPort <= 0 && httpPort<=0) {
+            throw new IllegalArgumentException("Must set at least http port or https port");
+        }
     }
 
     public void start() throws IOException {
@@ -52,9 +68,24 @@ public class XenSimulator {
         catch (XmlRpcException e) {
             throw new IllegalStateException("Fail to init", e);
         }
-        httpsWebServer = new SSLWebServer(httpsPort);
 
-        httpsWebServer.getXmlRpcServer().setTypeFactory(new TypeFactoryImpl(httpsWebServer.getXmlRpcServer()) {
+        if (httpsPort > 0) {
+
+            httpsWebServer = new ExtendWebServer(httpsPort, true);
+
+            configServer(httpsWebServer, phm);
+            httpsWebServer.start();
+            LOG.info("simulator started at port={}", httpsPort);
+        }
+        if (httpPort > 0) {
+            httpWebServer = new ExtendWebServer(httpPort, false);
+            configServer(httpWebServer, phm);
+            httpWebServer.start();
+        }
+    }
+
+    private void configServer(WebServer webserver, PropertyHandlerMapping phm) {
+        webserver.getXmlRpcServer().setTypeFactory(new TypeFactoryImpl(webserver.getXmlRpcServer()) {
             @Override
             public TypeSerializer getSerializer(XmlRpcStreamConfig pConfig, Object pObject) throws SAXException {
                 if (pObject instanceof Long) {
@@ -72,21 +103,21 @@ public class XenSimulator {
             }
         });
 
-        XmlRpcServer httpsXmlRpcServer = httpsWebServer.getXmlRpcServer();
-        httpsXmlRpcServer.setHandlerMapping(phm);
-        XmlRpcServerConfigImpl httpsServerConfig =
-                (XmlRpcServerConfigImpl) httpsXmlRpcServer.getConfig();
-        httpsServerConfig.setKeepAliveEnabled(true);
-        httpsServerConfig.setEnabledForExtensions(true);
-        httpsServerConfig.setContentLengthOptional(false);
-        httpsWebServer.start();
-        LOG.info("simulator started at port={}", httpsPort);
-
+        XmlRpcServer rpcServer = webserver.getXmlRpcServer();
+        rpcServer.setHandlerMapping(phm);
+        XmlRpcServerConfigImpl serverConfig =
+                (XmlRpcServerConfigImpl) rpcServer.getConfig();
+        serverConfig.setKeepAliveEnabled(true);
+        serverConfig.setEnabledForExtensions(true);
+        serverConfig.setContentLengthOptional(false);
     }
 
     public void stop() {
         if (httpsWebServer != null) {
             httpsWebServer.shutdown();
+        }
+        if (httpWebServer != null) {
+            httpWebServer.shutdown();
         }
     }
 }

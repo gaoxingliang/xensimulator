@@ -10,6 +10,7 @@ public class TestVM extends TestCase {
     public void test() throws Exception {
         System.out.println("=======");
         VM vm = VM.getByUuid(c, "ec944b8d-861e-ac96-ec47-5f56df8ef772");
+        System.out.println(vm.getPowerState(c));
         System.out.println(vm);
         VMMetrics.Record r = vm.getMetrics(c).getRecord(c);
         System.out.println(r);

@@ -8,7 +8,9 @@ import org.apache.logging.log4j.Logger;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.Map;
+import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.regex.Pattern;
 
 public class XenSimulatorSettings {
 
@@ -28,7 +30,10 @@ public class XenSimulatorSettings {
      */
     public static char[] keystorePass = "123456".toCharArray();
 
-
+    /**
+     * the default get request response for http(s)://xxx:yyy/
+     * by default, it contains a XenServer string
+     */
     public static String getResponseContent = "";
 
     /**
@@ -39,7 +44,7 @@ public class XenSimulatorSettings {
 
 
     // those files will be provided for remote side to update.
-    private static final ConcurrentHashMap<String, XMLResponse> xml2Map = new ConcurrentHashMap<>();
+    private static final ConcurrentHashMap<String /*xml path relative to class loader*/, XMLResponse /*the parsed xml response*/> xml2Map = new ConcurrentHashMap<>();
     private static final String[] xmlRecordFiles = new String[]{
             "/xmltemplates/host_all_records.xml", "/xmltemplates/host_cpu_all_records.xml",
             "/xmltemplates/host_get_datasources.xml", "/xmltemplates/host_metrics_get_record.xml",
@@ -50,7 +55,9 @@ public class XenSimulatorSettings {
             "/xmltemplates/VM_query_datasource.xml"
     };
 
+    public static final ConcurrentHashMap<String /*the get request uri regex pattern*/, String /*the response*/> uriRegex2Response = new ConcurrentHashMap<>();
 
+    public static GetRequestHandler getRequestHandler = new DefaultGetRequestHandler();
 
     static {
         try {
@@ -62,7 +69,7 @@ public class XenSimulatorSettings {
 
         for (String xmlFile : xmlRecordFiles) {
             try {
-                LOG.debug("Strat loading {}", xmlFile);
+                LOG.debug("Start loading {}", xmlFile);
                 xml2Map.put(xmlFile, XMLResponse.parse(XenSimulatorSettings.class.getResourceAsStream(xmlFile)));
             }
             catch (Exception e) {
@@ -194,8 +201,44 @@ public class XenSimulatorSettings {
 
 
     @SimAPI
-    public static Map setresponseDelayInMs(long responseDelayInMs) {
+    public static Map setResponseDelayInMs(long responseDelayInMs) {
         XenSimulatorSettings.responseDelayInMs = responseDelayInMs;
         return Response.RESPONSE_OK;
     }
+
+    @SimAPI
+    public static Map regUriPattern2Response(String uriRegexPattern, String response) {
+        try {
+            Pattern.compile(uriRegexPattern);
+            uriRegex2Response.put(uriRegexPattern, response);
+            return Response.RESPONSE_OK;
+        } catch (Exception e) {
+            LOG.error("Invalid uri regex pattern {}", uriRegexPattern);
+            return Response.newRsp().withError("Invalid regex pattern - " + uriRegexPattern).build();
+        }
+    }
+
+
+
+
+
+    public interface  GetRequestHandler {
+        String processGetRequest(String uri);
+    }
+
+    public static class DefaultGetRequestHandler implements GetRequestHandler {
+
+        @Override
+        public String processGetRequest(String uri) {
+            Optional<Map.Entry<String, String>> optionalEntry = uriRegex2Response.entrySet().stream().filter(en -> Pattern.compile(en.getKey()).matcher(en.getValue()).matches()).findFirst();
+            if (optionalEntry.isPresent()) {
+                return optionalEntry.get().getValue();
+            }
+            else {
+                LOG.info("No matched pattern found for uri {}, will return default content", uri);
+                return XenSimulatorSettings.getResponseContent;
+            }
+        }
+    }
+
 }

@@ -24,7 +24,7 @@ buildscript {
         MODULE                      = "xen-simulator"
         MAVEN_GROUP_ID              = "com.logicmonitor"
         MAVEN_ARTIFACT_ID           = "xen-simulator"
-        MAVEN_VERSION               = "0.0.6"
+        MAVEN_VERSION               = "0.0.7"
     }
 
     repositories {
@@ -85,9 +85,13 @@ dependencies {
         exclude group:"org.junit"
     }
     compile group: 'org.apache.xmlrpc', name: 'xmlrpc-client', version: '3.1.3'
-    compile group: 'org.apache.xmlrpc', name: 'xmlrpc-server', version: '3.1.3'
+
+    // we have a little code change for xmlrpc-server in order to support get requests
+    // the source is: https://github.com/gaoxingliang/apache-xmlrpc-3.1.3-src
+    compile fileTree(dir: 'libs', includes: ['*.jar'])
+    //compile group: 'org.apache.xmlrpc', name: 'xmlrpc-server', version: '3.1.3'
+
     compile group: 'commons-httpclient', name: 'commons-httpclient', version: '3.1'
-    compile "com.logicmonitor:xenserver:5.5.0-1"
     compile "org.apache.logging.log4j:log4j-api:2.5"
     compile "org.apache.logging.log4j:log4j-core:2.5"
 
@@ -185,4 +189,3 @@ task createJavaProject << {
     sourceSets*.java.srcDirs*.each { it.mkdirs() }
     sourceSets*.resources.srcDirs*.each { it.mkdirs()}
 }
-
