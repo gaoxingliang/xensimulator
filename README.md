@@ -1,9 +1,8 @@
 A Xen Simulator which use the XMLRPC server framework to simulate response for xen server devices.<br>
-This is useful for test case purpose.<br>Which support http and https.<br>
-
+This is useful for test case purpose.<br>
 <b>Notes:</b>
-- This project depends the forked apache-xmlrpc server code. please refer the build.gradle
 - This project works with xen-server SDK 5.5
+- There are two jars under [libs](libs/) directory. one is xen-server 5.5 SDK jar. another is a build of changed apache-xmlrpcserver. See the "How to configure part" for more details.
 
 
 # Features
@@ -89,6 +88,9 @@ OR register a uri pattern from remote side by call with similar code with previo
 ```
 XenSimulatorSettings.regUriPattern2Response(String uriRegexPattern, String response)
 ```
+
+# TODO
+Support latest sdk.
 
 # others
 ## new a keystore file
