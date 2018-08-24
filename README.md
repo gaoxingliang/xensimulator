@@ -67,7 +67,7 @@ System.out.println("Update the xml response " + updateIsATemplateResult);
 This method has a xml path argument which has a format:
 ```
  1. the students[0]'s name
-    The path is: $Value$.$students.$0
+    The path is: $Value$students$0
  2. the avgscore:
     The path is: $Value$avgscore
     That's to say, for a array, the format should like:
