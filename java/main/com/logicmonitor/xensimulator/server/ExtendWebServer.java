@@ -1,6 +1,7 @@
 package com.logicmonitor.xensimulator.server;
 
 import com.logicmonitor.xensimulator.utils.XenSimulatorSettings;
+import org.apache.commons.io.input.TeeInputStream;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.apache.xmlrpc.server.XmlRpcStreamServer;
@@ -13,10 +14,7 @@ import javax.net.ServerSocketFactory;
 import javax.net.ssl.KeyManagerFactory;
 import javax.net.ssl.SSLContext;
 import javax.net.ssl.TrustManagerFactory;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
-import java.io.UnsupportedEncodingException;
+import java.io.*;
 import java.lang.reflect.Field;
 import java.net.InetAddress;
 import java.net.ServerSocket;
@@ -75,13 +73,18 @@ public class ExtendWebServer extends WebServer {
 
     protected ThreadPool.Task newTask(WebServer pServer, XmlRpcStreamServer pXmlRpcServer,
                                       Socket pSocket) throws IOException {
-        return new GetRequestSupportedConnecttion(pServer, pXmlRpcServer, pSocket);
+        return new GetRequestSupportedConnection(pServer, pXmlRpcServer, pSocket);
     }
 
 
-    static class GetRequestSupportedConnecttion extends Connection {
+    static class GetRequestSupportedConnection extends Connection {
 
         protected OutputStream output;
+        protected InputStream rawinput;
+
+        // this will be used to record the response and request
+        // when a request is finished, reset it!
+        private ByteArrayOutputStream requestCopy;
 
         /**
          * Creates a new webserver connection on the given socket.
@@ -92,7 +95,7 @@ public class ExtendWebServer extends WebServer {
          *                   is responsible for closing this socket.
          * @throws IOException
          */
-        public GetRequestSupportedConnecttion(WebServer pWebServer, XmlRpcStreamServer pServer, Socket pSocket) throws IOException {
+        public GetRequestSupportedConnection(WebServer pWebServer, XmlRpcStreamServer pServer, Socket pSocket) throws IOException {
             super(pWebServer, pServer, pSocket);
 
             try {
@@ -103,10 +106,28 @@ public class ExtendWebServer extends WebServer {
             catch (Exception e) {
                 throw new IllegalStateException("Fail to access the out field", e);
             }
+
+            try {
+                Field inputField = Connection.class.getDeclaredField("input");
+                inputField.setAccessible(true);
+                rawinput = (InputStream) inputField.get(this);
+                requestCopy = new ByteArrayOutputStream();
+                TeeInputStream dup = new TeeInputStream(rawinput, requestCopy, true);
+                inputField.set(this, dup);
+            }
+            catch (Exception e) {
+                throw new IllegalStateException("Fail to access the input field", e);
+            }
         }
 
         @Override
         public void writeResponse(RequestData pData, OutputStream pBuffer) throws IOException {
+            ByteArrayOutputStream response = (ByteArrayOutputStream) pBuffer;
+            LOG.debug("Request={}", requestCopy.toString());
+            requestCopy.reset();
+            LOG.debug("Success Response={}", response.toString());
+
+
             if (XenSimulatorSettings.responseDelayInMs > 0) {
                 try {
                     Thread.sleep(XenSimulatorSettings.responseDelayInMs);
@@ -133,6 +154,15 @@ public class ExtendWebServer extends WebServer {
             else {
                 super.writeErrorHeader(pData, pError, pContentLength);
             }
+        }
+
+        @Override
+        public void writeError(RequestData pData, Throwable pError, ByteArrayOutputStream pStream) throws IOException {
+            LOG.error("Request={}", requestCopy.toString());
+            LOG.error("Error response={}", pStream.toString());
+            requestCopy.reset();
+
+            super.writeError(pData, pError, pStream);
         }
 
         private void writeGetRequestResponse(String response) throws IOException {
