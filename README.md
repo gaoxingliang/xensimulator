@@ -90,7 +90,8 @@ XenSimulatorSettings.regUriPattern2Response(String uriRegexPattern, String respo
 ```
 
 # TODO
-Support latest sdk.
+~~Support latest sdk.~~(Test latest SDK 7.5 and it's worked)
+
 
 # others
 ## new a keystore file
